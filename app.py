@@ -60,7 +60,7 @@ def index():
 def chat():
     msg = request.form["msg"]
     input = msg
-    print(input)0
+    print(input)
     response = rag_chain.invoke({"input": msg})
     print("Response : ", response["answer"])
     return str(response["answer"])
