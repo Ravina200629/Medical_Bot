@@ -11,7 +11,7 @@ from src.prompt import *
 import os
 
 
-app = Flask(_name_)
+app = Flask(__name__)
 
 
 load_dotenv()
