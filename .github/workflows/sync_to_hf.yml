@@ -21,11 +21,10 @@ jobs:
           git lfs track "data/*.pdf"
           git lfs track "*.pdf"
 
-      # FIXED: Changed from @v1 to the actual release version @v0.2.0
       - name: Push to Hugging Face Hub
         uses: huggingface/hub-sync@v0.2.0
         with:
-          github_repo_id: Ravina200629/Medibot  
-          huggingface_repo_id: Ravina200629/Medibot  
+          github_repo_id: Ravina200629/Medical_Bot  # Make sure this matches your exact GitHub repo name from the log
+          huggingface_repo_id: Ravina200629/medibot  # Change this to match your EXACT Hugging Face space name case
           hf_token: ${{ secrets.HF_TOKEN }}
           repo_type: space
