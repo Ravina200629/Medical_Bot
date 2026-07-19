@@ -20,7 +20,7 @@ jobs:
           python-version: '3.10'
 
       - name: Install Hugging Face Hub API
-        run: pip install huggingface_hub
+        run: pip install huggingface_hub requests
 
       - name: Strip PDF and Push Clean Snapshot
         env:
@@ -29,38 +29,38 @@ jobs:
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
           
-          # 1. Create a fresh local Git branch
           git checkout --orphan temp-main
-          
-          # 2. PHYSICALLY remove the PDF from the disk before running git add
-          # This guarantees git cannot track it into the repository
           rm -f data/Medical_book.pdf
           
-          # 3. Add remaining files and commit
           git add -A
           git commit -m "Deploy clean application codebase snapshot"
-          
-          # 4. Force push over to Hugging Face (this will pass instantly)
           git push --force https://git:$HF_TOKEN@huggingface.co/spaces/Ravina200629/medibot temp-main:main
 
-      # 5. Stream the large PDF safely through Hugging Face's backend API lane
+      # FIXED: Streams the PDF directly from GitHub's raw link so it doesn't matter that we deleted it locally
       - name: Upload Large PDF via API Bypass
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          # Use checkout again in a clean directory or pull directly to get the PDF file for python
           python -c "
-          import os
+          import requests
           from huggingface_hub import HfApi
-          api = HfApi(token='${{ secrets.HF_TOKEN }}')
           
-          # Retrieve the file from the main branch checkout history
-          print('Uploading large PDF via API...')
-          api.upload_file(
-              path_or_fileobj='data/Medical_book.pdf',
-              path_in_repo='data/Medical_book.pdf',
-              repo_id='Ravina200629/medibot',
-              repo_type='space'
-          )
-          print('PDF Upload successful!')
+          # Download the file directly into Python memory from your repository
+          url = 'https://githubusercontent.com'
+          print('Downloading PDF from GitHub source...')
+          response = requests.get(url, stream=True)
+          
+          if response.status_code == 200:
+              api = HfApi(token='${{ secrets.HF_TOKEN }}')
+              print('Streaming large PDF directly into Hugging Face storage...')
+              api.upload_file(
+                  path_or_fileobj=response.raw,
+                  path_in_repo='data/Medical_book.pdf',
+                  repo_id='Ravina200629/medibot',
+                  repo_type='space'
+              )
+              print('PDF Upload successful!')
+          else:
+              print(f'Failed to fetch PDF from GitHub. Status code: {response.status_code}')
+              exit(1)
           "
