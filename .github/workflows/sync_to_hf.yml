@@ -23,10 +23,10 @@ jobs:
           git lfs track "data/*.pdf"
           git lfs track "*.pdf"
 
+      # FIXED: Formatted the authentication string safely inside an environment block
       - name: Push to Hugging Face Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          # We use token authentication directly inside the push command to bypass the API block
-          git remote add space https://git:$HF_TOKEN@huggingface.co/spaces/Ravina200629/medibot
+          git remote add space "https://git:${HF_TOKEN}@huggingface.co/spaces/Ravina200629/medibot"
           git push --force space main
