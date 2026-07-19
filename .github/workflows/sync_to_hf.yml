@@ -13,12 +13,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          lfs: true # Crucial: tells GitHub to pull LFS files
+          lfs: true
 
       - name: Install and configure Git LFS
         run: |
           git lfs install
-          # Explicitly track PDF files so Hugging Face accepts them
           git lfs track "data/*.pdf"
           git lfs track "*.pdf"
 
@@ -26,6 +25,6 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          git remote add space https://Ravina200629:$HF_TOKEN@huggingface.co/spaces/Ravina200629/Medibot
-          # Force push to overwrite the remote index with LFS pointers
+          # Note: Use 'git' as the username before the token, NOT your actual username
+          git remote add space https://git:$HF_TOKEN@huggingface.co/spaces/Ravina200629/Medibot
           git push --force space main
