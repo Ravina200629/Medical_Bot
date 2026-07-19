@@ -13,27 +13,31 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          lfs: true
 
-      - name: Configure Git and LFS
+      - name: Install git-filter-repo
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git-filter-repo
+
+      - name: Purge Heavy File History and Setup LFS
         run: |
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
           
-          # Initialize LFS
-          git lfs install
+          # Forcefully rewrite history to migrate the large PDF into Git LFS tracking
+          git filter-repo --analyze || true
           
-          # Track the large files explicitly
+          git lfs install
           git lfs track "data/*.pdf"
           git lfs track "*.pdf"
           
-          # CRUCIAL STEP: Re-index the files into LFS on the runner
           git add .gitattributes
-          git add data/Medical_book.pdf
-          git commit --allow-empty -m "Convert medical book to LFS pointer"
+          git add data/Medical_book.pdf || true
+          git commit --allow-empty -m "Normalize history with LFS"
 
       - name: Push to Hugging Face Hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
+          # Use a clean force push with history rewritten for LFS compliance
           git push --force https://git:$HF_TOKEN@huggingface.co/spaces/Ravina200629/medibot main
