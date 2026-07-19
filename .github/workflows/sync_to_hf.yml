@@ -19,14 +19,21 @@ jobs:
         run: |
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
+          
+          # Initialize LFS
           git lfs install
+          
+          # Track the large files explicitly
           git lfs track "data/*.pdf"
           git lfs track "*.pdf"
+          
+          # CRUCIAL STEP: Re-index the files into LFS on the runner
+          git add .gitattributes
+          git add data/Medical_book.pdf
+          git commit --allow-empty -m "Convert medical book to LFS pointer"
 
-      # OFFICIAL DIRECT SYNC METHOD
       - name: Push to Hugging Face Hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          # Push directly using token authentication as the username string
           git push --force https://git:$HF_TOKEN@huggingface.co/spaces/Ravina200629/medibot main
