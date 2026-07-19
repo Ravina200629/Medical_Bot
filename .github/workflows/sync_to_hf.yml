@@ -23,10 +23,14 @@ jobs:
           git lfs track "data/*.pdf"
           git lfs track "*.pdf"
 
-      # FIXED: Formatted the authentication string safely inside an environment block
+      # SAFE VERSION: Automatically strips trailing newlines and uses standard HTTP authorization headers
       - name: Push to Hugging Face Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          git remote add space "https://git:${HF_TOKEN}@huggingface.co/spaces/Ravina200629/medibot"
+          # Strip any potential hidden whitespace or trailing newlines from the secret variable
+          CLEAN_TOKEN=$(echo "$HF_TOKEN" | xargs)
+          
+          git remote add space https://huggingface.co
+          git config --local http.https://huggingface.co "Authorization: Bearer $CLEAN_TOKEN"
           git push --force space main
