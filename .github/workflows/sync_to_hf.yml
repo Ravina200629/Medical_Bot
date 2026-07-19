@@ -15,16 +15,17 @@ jobs:
           fetch-depth: 0
           lfs: true
 
-      - name: Install and configure Git LFS
+      - name: Set up Git LFS
         run: |
           git lfs install
           git lfs track "data/*.pdf"
           git lfs track "*.pdf"
 
-      - name: Push to HF
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: |
-          # Note: Use 'git' as the username before the token, NOT your actual username
-          git remote add space https://git:$HF_TOKEN@huggingface.co/spaces/Ravina200629/Medibot
-          git push --force space main
+      # Official Hugging Face Action that handles token security natively
+      - name: Push to Hugging Face Hub
+        uses: huggingface/hub-sync@v1
+        with:
+          github_repo_id: Ravina200629/Medibot  # Your GitHub Repository
+          huggingface_repo_id: Ravina200629/Medibot  # Your HF Space Name
+          hf_token: ${{ secrets.HF_TOKEN }}
+          repo_type: space
