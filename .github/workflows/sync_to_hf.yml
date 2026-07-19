@@ -20,7 +20,7 @@ jobs:
           python-version: '3.10'
 
       - name: Install Hugging Face Hub API
-        run: pip install huggingface_hub requests
+        run: pip install huggingface_hub
 
       - name: Strip PDF and Push Clean Snapshot
         env:
@@ -29,38 +29,36 @@ jobs:
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
           
+          # 1. Back up the PDF file to a safe temporary system directory
+          cp data/Medical_book.pdf /tmp/Medical_book.pdf
+          
+          # 2. Re-create a completely history-less branch
           git checkout --orphan temp-main
+          
+          # 3. Delete the PDF from the Git working directory
           rm -f data/Medical_book.pdf
           
+          # 4. Add remaining files and commit
           git add -A
           git commit -m "Deploy clean application codebase snapshot"
+          
+          # 5. Push code safely to Hugging Face
           git push --force https://git:$HF_TOKEN@huggingface.co/spaces/Ravina200629/medibot temp-main:main
 
-      # FIXED: Streams the PDF directly from GitHub's raw link so it doesn't matter that we deleted it locally
+      # 6. Stream the backed-up PDF file directly using the official API handler
       - name: Upload Large PDF via API Bypass
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           python -c "
-          import requests
           from huggingface_hub import HfApi
-          
-          # Download the file directly into Python memory from your repository
-          url = 'https://githubusercontent.com'
-          print('Downloading PDF from GitHub source...')
-          response = requests.get(url, stream=True)
-          
-          if response.status_code == 200:
-              api = HfApi(token='${{ secrets.HF_TOKEN }}')
-              print('Streaming large PDF directly into Hugging Face storage...')
-              api.upload_file(
-                  path_or_fileobj=response.raw,
-                  path_in_repo='data/Medical_book.pdf',
-                  repo_id='Ravina200629/medibot',
-                  repo_type='space'
-              )
-              print('PDF Upload successful!')
-          else:
-              print(f'Failed to fetch PDF from GitHub. Status code: {response.status_code}')
-              exit(1)
+          api = HfApi(token='${{ secrets.HF_TOKEN }}')
+          print('Uploading large PDF via backend API stream...')
+          api.upload_file(
+              path_or_fileobj='/tmp/Medical_book.pdf',
+              path_in_repo='data/Medical_book.pdf',
+              repo_id='Ravina200629/medibot',
+              repo_type='space'
+          )
+          print('PDF Upload successful!')
           "
