@@ -21,11 +21,11 @@ jobs:
           git lfs track "data/*.pdf"
           git lfs track "*.pdf"
 
-      # Official Hugging Face Action that handles token security natively
+      # FIXED: Changed from @v1 to the actual release version @v0.2.0
       - name: Push to Hugging Face Hub
-        uses: huggingface/hub-sync@v1
+        uses: huggingface/hub-sync@v0.2.0
         with:
-          github_repo_id: Ravina200629/Medibot  # Your GitHub Repository
-          huggingface_repo_id: Ravina200629/Medibot  # Your HF Space Name
+          github_repo_id: Ravina200629/Medibot  
+          huggingface_repo_id: Ravina200629/Medibot  
           hf_token: ${{ secrets.HF_TOKEN }}
           repo_type: space
